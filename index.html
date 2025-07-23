@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Robot de Prédiction Pro - Version Améliorée</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .5; }
+    }
+    .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(-25%); }
+        50% { transform: translateY(0); }
+    }
+    .animate-bounce { animation: bounce 1s infinite; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    
+    .countdown-container {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: linear-gradient(145deg, #f3f4f6, #ffffff);
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .coefficient-badge {
+        display: inline-block;
+        background: linear-gradient(145deg, #3B82F6, #1E40AF);
+        color: white;
+        border-radius: 9999px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+        margin: 0.25rem;
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    .auto-fetch-container {
+        background: linear-gradient(145deg, #f0f4f8, #def1ff);
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .predicted-rounds-container {
+        margin-top: 1.5rem;
+        padding: 1.2rem;
+        background: linear-gradient(145deg, #f0f9ff, #e0f2fe);
+        border-radius: 12px;
+        border: 1px solid #bae6fd;
+    }
+    
+    .round-badge {
+        display: inline-block;
+        background: linear-gradient(145deg, #1d4ed8, #3b82f6);
+        color: white;
+        border-radius: 8px;
+        padding: 0.5rem 1.2rem;
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin: 0.3rem;
+        box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+    }
+    
+    .verification-status {
+        padding: 0.5rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        text-align: center;
+    }
+    
+    .verification-in-progress {
+        background-color: #fffbeb;
+        color: #854d0e;
+        border: 1px solid #fde68a;
+    }
+    
+    .verification-success {
+        background-color: #dcfce7;
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+    
+    .verification-failed {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fca5a5;
+    }
+    
+    .round-indicator {
+        display: inline-block;
+        background: linear-gradient(145deg, #1d4ed8, #3b82f6);
+        color: white;
+        border-radius: 8px;
+        padding: 0.3rem 0.8rem;
+        font-weight: bold;
+        font-size: 0.9rem;
+        margin: 0.1rem;
+    }
+    
+    .history-item {
+        transition: all 0.3s ease;
+    }
+    
+    .history-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .stats-card {
+        background: linear-gradient(145deg, #ffffff, #f9fafb);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        padding: 1.5rem;
+    }
+    
+    .robot-header {
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .feature-card {
+        background: linear-gradient(145deg, #f0f9ff, #e0f7fa);
+        border-radius: 12px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+        border: 1px solid #bae6fd;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .floating {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes glow {
+        0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+        50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+        100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+    }
+    
+    .glowing {
+        animation: glow 2s infinite;
+    }
+    
+    .confidence-level {
+        height: 10px;
+        border-radius: 5px;
+        background: linear-gradient(to right, #ef4444, #f59e0b, #10b981);
+    }
+    
+    .confidence-fill {
+        height: 100%;
+        border-radius: 5px;
+        background: #3b82f6;
+        transition: width 1s ease-in-out;
+    }
+    
+    .trend-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    
+    .trend-up {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+    
+    .trend-down {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    
+    .trend-stable {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+    }
+    
+    .pattern-indicator {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin-left: 5px;
+    }
+    
+    .pattern-bullish {
+        background-color: #dcfce7;
+        color: #166534;
+        border-left: 3px solid #10b981;
+    }
+    
+    .pattern-bearish {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        border-left: 3px solid #ef4444;
+    }
+    
+    .pattern-neutral {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+        border-left: 3px solid #3b82f6;
+    }
+    
+    .duplicate-warning {
+        background-color: #fffbeb;
+        color: #854d0e;
+        border: 1px solid #fde68a;
+        padding: 8px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        text-align: center;
+        margin-top: 10px;
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    @media (max-width: 768px) {
+        #loginModal {
+            padding: 0;
+        }
+        
+        #loginModal > div {
+            min-height: 100%;
+            padding: 1rem;
+        }
+        
+        #loginModal > div > div {
+            margin: 0;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+    }
+
+    @media (min-width: 769px) {
+        #loginModal > div > div {
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: 2rem auto;
+        }
+    }
+
+    #loginModal > div > div::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #loginModal > div > div::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    #loginModal > div > div::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    #loginModal > div > div::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f0f9ff, #e6f7ff);
+        min-height: 100vh;
+    }
+    
+    .dashboard-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .gradient-btn {
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .gradient-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(59, 130, 246, 0.25);
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .status-pending {
+        background: #fffbeb;
+        color: #d97706;
+    }
+    
+    .status-success {
+        background: #dcfce7;
+        color: #166534;
+    }
+    
+    .status-failed {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+    
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        border-radius: 12px;
+        color: #4b5563;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-link:hover {
+        background: #f3f4f6;
+        color: #1d4ed8;
+    }
+    
+    .nav-link.active {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+    </style>
+</head>
+<body class="bg-gray-50">
+<!-- Modal de connexion -->
+<div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+    <div class="min-h-screen w-full py-6 flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-xl w-full mx-4 my-auto shadow-2xl relative">
+            <!-- Code Promo Animé -->
+            <div class="relative -mt-2 mb-8">
+                <a href="https://t.me/betsmartbotcasino" class="block bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300">
+                    <div class="absolute -top-3 -right-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full animate-bounce">
+                        INFORMATION IMPORTANTE 
+                    </div>
+                    <h3 class="text-white text-xl font-bold mb-2">🎉 invite 3 personnes à rejoindre le canal telegram</h3>
+                    <div class="bg-white/20 backdrop-blur-sm p-4 rounded-lg inline-block animate-pulse">
+                        <span class="text-3xl font-bold text-white tracking-wider">Predicteur Pro</span>
+                    </div>
+                    <p class="text-white/90 mt-3 text-sm">
+                        Offre spéciale : Passez à la formule supérieure !
+                    </p>
+                    <p class="text-yellow-300 text-sm mt-2">
+                        Réservé aux 100 premiers inscrits
+                    </p>
+                    <div class="mt-2 text-white text-xs">
+                        Ex: Forfait 5.000 Fr → Accès au forfait 15.000 Fr
+                    </div>
+                    <div class="mt-2 text-yellow-300 text-sm animate-pulse">
+                        Cliquez pour rejoindre le canal telegram ➜
+                    </div>
+                </a>
+            </div>
+
+            <!-- En-tête -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                    🚀 Robot de Prediction Pro
+                </h2>
+                <p class="text-gray-600">Intelligence Artificielle pour Prédictions Optimales</p>
+            </div>
+
+            <!-- Zone de code d'accès -->
+            <div class="mb-8 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                <label class="block text-gray-700 text-sm font-bold mb-3" for="accessCode">
+                    🔑 Code d'accès
+                </label>
+                <input 
+                    type="text" 
+                    id="accessCode"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Entrez votre code d'accès"
+                >
+            </div>
+            
+            <div class="countdown-container" id="countdownContainer" style="display: none;">
+                <div class="countdown-header text-center font-bold text-blue-700 mb-4">Temps restant</div>
+                <div class="countdown-timer flex justify-center gap-4">
+                    <div class="countdown-box bg-white p-3 rounded-lg shadow-md">
+                        <span id="days" class="block text-2xl font-bold text-blue-600">00</span>
+                        <label class="text-gray-600 text-sm">Jours</label>
+                    </div>
+                    <div class="countdown-box bg-white p-3 rounded-lg shadow-md">
+                        <span id="hours" class="block text-2xl font-bold text-blue-600">00</span>
+                        <label class="text-gray-600 text-sm">Heures</label>
+                    </div>
+                    <div class="countdown-box bg-white p-3 rounded-lg shadow-md">
+                        <span id="minutes" class="block text-2xl font-bold text-blue-600">00</span>
+                        <label class="text-gray-600 text-sm">Minutes</label>
+                    </div>
+                    <div class="countdown-box bg-white p-3 rounded-lg shadow-md">
+                        <span id="seconds" class="block text-2xl font-bold text-blue-600">00</span>
+                        <label class="text-gray-600 text-sm">Secondes</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forfaits -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="relative bg-gradient-to-br from-blue-500/10 to-blue-600/10 p-6 rounded-xl border border-blue-200 backdrop-blur-sm hover:transform hover:scale-105 transition-all duration-300">
+                    <div class="absolute -top-3 -right-3 bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
+                        24H
+                    </div>
+                    <h3 class="font-bold text-blue-800">Accès Journalier</h3>
+                    <p class="text-2xl font-bold text-blue-600 my-2">1.000 Fr</p>
+                    <p class="text-sm text-blue-600">Accès complet 24h</p>
+                </div>
+
+                <div class="relative bg-gradient-to-br from-purple-500/10 to-purple-600/10 p-6 rounded-xl border border-purple-200 backdrop-blur-sm hover:transform hover:scale-105 transition-all duration-300">
+                    <div class="absolute -top-3 -right-3 bg-purple-500 text-white text-xs px-3 py-1 rounded-full">
+                        SEMAINE
+                    </div>
+                    <h3 class="font-bold text-purple-800">Accès Hebdomadaire</h3>
+                    <p class="text-2xl font-bold text-purple-600 my-2">5.000 Fr</p>
+                    <p class="text-sm text-purple-600">Accès complet 7 jours</p>
+                </div>
+
+                <div class="relative bg-gradient-to-br from-green-500/10 to-green-600/10 p-6 rounded-xl border border-green-200 backdrop-blur-sm hover:transform hover:scale-105 transition-all duration-300">
+                    <div class="absolute -top-3 -right-3 bg-green-500 text-white text-xs px-3 py-1 rounded-full">
+                        MOIS
+                    </div>
+                    <h3 class="font-bold text-green-800">Accès Mensuel</h3>
+                    <p class="text-2xl font-bold text-green-600 my-2">15.000 Fr</p>
+                    <p class="text-sm text-green-600">Accès complet 30 jours</p>
+                </div>
+            </div>
+            <!-- Messages importants -->
+            <div class="space-y-6 mb-8">
+                <!-- Horaires et Délais -->
+                <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-200">
+                    <h3 class="text-lg font-bold text-yellow-800 mb-4 flex items-center">
+                        <span class="mr-2">⏰</span> Horaires de Service
+                    </h3>
+                    <div class="space-y-3 text-sm text-yellow-700">
+                        <div class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <p><span class="font-semibold">Heures d'ouverture :</span> 8h - 22h</p>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <p><span class="font-semibold">Important :</span> Aucun traitement (appel/WhatsApp) en dehors des heures de service</p>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <p class="text-yellow-800 font-medium">Les souscriptions effectuées hors horaires de service peuvent subir des délais de traitement prolongés</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Réception du code -->
+                <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                    <h3 class="text-lg font-bold text-blue-800 mb-4 flex items-center">
+                        <span class="mr-2">🔑</span> Réception du Code d'Accès
+                    </h3>
+                    <div class="space-y-3 text-sm text-blue-700">
+                        <p class="font-medium">Si vous n'avez pas reçu votre code d'accès dans les 5 minutes après votre paiement :</p>
+                        <div class="flex items-start">
+                            <span class="mr-2">1.</span>
+                            <p>Contactez le numéro sur lequel vous avez effectué le paiement</p>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="mr-2">2.</span>
+                            <p>OU contactez notre support WhatsApp</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Moyens de paiement -->
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-xl mb-8 border border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="mr-2">💳</span> Moyens de Paiement
+                </h3>
+                <div class="space-y-4">
+                    <!-- Orange & Wave -->
+                    <div class="flex items-center justify-between bg-white p-4 rounded-lg hover:shadow-md transition-all">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-blue-100 p-2 rounded-lg">
+                                <i class="fas fa-mobile-alt text-blue-600 text-2xl"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700">0708453461</span>
+                        </div>
+                    </div>
+
+                    <!-- MTN & Wave -->
+                    <div class="flex items-center justify-between bg-white p-4 rounded-lg hover:shadow-md transition-all">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-yellow-100 p-2 rounded-lg">
+                                <i class="fas fa-money-bill-wave text-yellow-600 text-2xl"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700">0506210051</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bouton de connexion -->
+            <button 
+                onclick="verifyAccess()"
+                class="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white py-4 rounded-xl hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 font-bold text-lg glowing"
+            >
+                Accéder à l'application
+            </button>
+
+             <!-- Note pour les utilisateurs internationaux -->
+            <p class="text-center mt-4 text-sm text-gray-600">
+                Utilisateurs hors Côte d'Ivoire : Contactez le support WhatsApp pour la souscription
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Interface principale -->
+<div class="container mx-auto px-4 py-8">
+    <div class="robot-header text-center">
+        <h1 class="text-4xl font-bold flex items-center justify-center">
+            <i class="fas fa-robot mr-3 floating"></i>
+            🤖 Predicteur Pro 
+            <span class="ml-3 bg-green-500 text-white text-sm px-3 py-1 rounded-full">V5.0</span>
+        </h1>
+        <p class="mt-2 text-blue-100">Suivi automatique des prédictions avec analyse avancée améliorée</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <!-- Colonne principale -->
+        <div class="lg:col-span-2">
+            <div class="dashboard-card p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                    Analyse des Côtes - Version Améliorée
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="feature-card">
+                        <label class="block text-gray-700 font-bold mb-3">
+                            <i class="fas fa-list-ol text-blue-500 mr-2"></i>
+                            Côtes (min. 3)
+                        </label>
+                        <input 
+                            type="text" 
+                            id="oddsInput" 
+                            placeholder="Ex: 1.50, 1.75, 2.00," 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        >
+                    </div>
+                    
+                    <div class="feature-card">
+                        <label class="block text-gray-700 font-bold mb-3">
+                            <i class="fas fa-coins text-yellow-500 mr-2"></i>
+                            Mise (€)
+                        </label>
+                        <input 
+                            type="number" 
+                            id="betAmount" 
+                            placeholder="Montant à miser" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            min="0"
+                            step="0.01"
+                        >
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 mb-6">
+                    <button onclick="predictOdds()" class="flex-1 gradient-btn glowing">
+                        <i class="fas fa-calculator mr-2"></i>
+                        Analyser
+                    </button>
+                    <button onclick="openAdvancedSettings()" class="bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 px-6 rounded-lg hover:opacity-90 transition font-semibold">
+                        <i class="fas fa-cog mr-2"></i>
+                        Options
+                    </button>
+                </div>
+                
+                <div id="result" class="bg-gray-50 rounded-xl p-6 mt-4 border border-gray-200">
+                    <div class="text-center text-gray-500">
+                        Entrez vos côtes pour obtenir une prédiction améliorée
+                    </div>
+                </div>
+                
+                <div class="auto-fetch-container mt-6">
+                    <div class="auto-fetch-header flex justify-between items-center">
+                        <div class="auto-fetch-title font-bold text-blue-800">
+                            <i class="fas fa-sync-alt mr-2"></i> Récupération Automatique
+                        </div>
+                        <div class="auto-fetch-status text-gray-700" id="autoFetchStatus">
+                            <span class="auto-fetch-dot bg-red-500 rounded-full w-3 h-3 inline-block mr-2"></span>
+                            <span>Inactif</span>
+                        </div>
+                    </div>
+                    
+                    <div class="coefficients-display mt-4 bg-white rounded-lg p-4" id="coefficientsDisplay">
+                        <p class="text-center text-gray-500">Les coefficients apparaîtront ici</p>
+                    </div>
+                    
+                    <div class="flex gap-4 mt-4">
+                        <button onclick="startAutoFetch()" class="flex-1 gradient-btn">
+                            <i class="fas fa-play mr-2"></i> Démarrer
+                        </button>
+                        <button onclick="stopAutoFetch()" class="flex-1 bg-gradient-to-r from-red-500 to-rose-600 text-white py-2 rounded-lg hover:opacity-90 transition font-semibold">
+                            <i class="fas fa-stop mr-2"></i> Arrêter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Colonne de droite -->
+        <div>
+            <div class="stats-card mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-chart-pie text-purple-500 mr-2"></i>
+                    Statistiques Globales
+                </h3>
+                <div id="statsContainer" class="text-center">
+                    <p id="totalPredictions" class="text-3xl font-bold text-blue-600">0</p>
+                    <p id="predictionAccuracy" class="text-2xl font-bold text-green-600 mt-2">0%</p>
+                    <div class="grid grid-cols-3 gap-4 mt-4">
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <p class="text-lg font-bold text-green-800">✅</p>
+                            <p class="text-sm text-gray-700">Validées</p>
+                            <p id="successCount" class="font-bold">0</p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-lg">
+                            <p class="text-lg font-bold text-red-800">❌</p>
+                            <p class="text-sm text-gray-700">Échouées</p>
+                            <p id="failedCount" class="font-bold">0</p>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <p class="text-lg font-bold text-yellow-800">⏳</p>
+                            <p class="text-sm text-gray-700">En attente</p>
+                            <p id="pendingCount" class="font-bold">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-card mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-brain text-indigo-500 mr-2"></i>
+                        Analyse Intelligence
+                    </h3>
+                    <button onclick="analyzeHistoricalData()" class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-3 py-1 rounded-lg text-sm hover:opacity-90 transition">
+                        Actualiser
+                    </button>
+                </div>
+                <div id="intelligentAnalysis" class="text-sm space-y-3">
+                    <div class="animate-pulse text-gray-500">
+                        Cliquez sur Actualiser pour analyser les données
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-history text-blue-500 mr-2"></i>
+                        Historique des Prédictions
+                    </h3>
+                    <button id="toggleHistory" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-3 py-1 rounded-lg text-sm hover:opacity-90 transition" onclick="toggleHistoryVisibility()">
+                        Masquer
+                    </button>
+                </div>
+                <div id="predictionHistory" class="space-y-4 max-h-[500px] overflow-y-auto pr-2"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section graphique -->
+    <div class="dashboard-card p-6 mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-chart-bar text-green-500 mr-2"></i>
+            Évolution des Prédictions
+        </h3>
+        <canvas id="statsChart" height="300"></canvas>
+    </div>
+    
+    <!-- Section Fonctionnalités -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <div class="feature-card">
+            <div class="text-blue-500 text-3xl mb-3">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2">Suivi Automatique</h4>
+            <p class="text-gray-600">Le système vérifie automatiquement le succès de chaque prédiction sur les 5 rounds suivants.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="text-green-500 text-3xl mb-3">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2">IA Avancée</h4>
+            <p class="text-gray-600">Algorithmes intelligents pour prédire les côtes avec une précision optimale.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="text-purple-500 text-3xl mb-3">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2">Analyse en Temps Réel</h4>
+            <p class="text-gray-600">Visualisez l'évolution de vos prédictions grâce à des graphiques interactifs.</p>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-12 mt-16">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <h3 class="text-xl font-bold mb-4">Predicteur Pro</h3>
+                <p class="text-gray-300">L'outil ultime pour les prédictions de paris avec une précision inégalée.</p>
+            </div>
+            
+            <div>
+                <h4 class="font-bold text-lg mb-4">Navigation</h4>
+                <ul class="space-y-2 text-gray-300">
+                    <li><a href="#" class="hover:text-white transition">Accueil</a></li>
+                    <li><a href="#" class="hover:text-white transition">Fonctionnalités</a></li>
+                    <li><a href="#" class="hover:text-white transition">Tarifs</a></li>
+                    <li><a href="#" class="hover:text-white transition">FAQ</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-bold text-lg mb-4">Support</h4>
+                <ul class="space-y-2 text-gray-300">
+                    <li><i class="fas fa-phone mr-2"></i> +225 05 06 21 00 51</li>
+                    <li><i class="fas fa-envelope mr-2"></i> dieudonne230@gmail.com</li>
+                    <li><i class="fab fa-whatsapp mr-2"></i> WhatsApp Support</li>
+                    <li><i class="fab fa-telegram mr-2"></i> Telegram Channel</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-lg mb-4">Mises à jour</h4>
+                <p class="text-gray-300 mb-4">Inscrivez-vous pour recevoir les dernières nouveautés.</p>
+                <div class="flex">
+                    <input type="email" placeholder="Votre email" class="px-4 py-2 rounded-l-lg w-full">
+                    <button class="bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-2 rounded-r-lg">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+         <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2023 Predicteur Pro. Tous droits réservés.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Configuration Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyBKkCEsvjAh9DIhBlx5tfQzM5ceTSP0Tiw",
+        authDomain: "predictionbot-59e47.firebaseapp.com",
+        projectId: "predictionbot-59e47",
+        storageBucket: "predictionbot-59e47.appspot.com",
+        messagingSenderId: "804807142505",
+        appId: "1:804807142505:web:da39797c5354de59ad46f8",
+        measurementId: "G-9DB03YTP83"
+    };
+    
+    // Initialisation Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    
+    // Variables globales
+    let predictionHistory = JSON.parse(localStorage.getItem('predictionHistory')) || [];
+    let statsChart = null;
+    let isHistoryVisible = true;
+    let autoCoefficients = [];
+    let autoFetchInterval = null;
+    let pendingVerification = [];
+    let isAutoFetchActive = false;
+    let trendAnalysis = [];
+    
+    // Variables pour le contrôle des doublons
+    let lastCoefficient = null;
+    let lastFetchTime = null;
+    let duplicateWarningTimeout = null;
+    
+    // Initialisation au chargement
+    document.addEventListener('DOMContentLoaded', () => {
+        updatePredictionHistory();
+        updateStatistics();
+        updateStatsChart();
+        analyzeHistoricalData();
+        
+        // Vérifier si l'utilisateur est déjà connecté
+        const hasAccess = localStorage.getItem('codeAccess');
+        const expiration = localStorage.getItem('accessExpiration');
+        const now = new Date().getTime();
+        
+        if (hasAccess && expiration && now < parseInt(expiration)) {
+            document.getElementById('loginModal').style.display = 'none';
+            const expirationDate = new Date(parseInt(expiration));
+            startExpirationTimer(expirationDate);
+        }
+    });
+
+    // Nouvelle fonction pour récupérer les coefficients
+    async function fetchStopCoefficient() {
+        const apiURL = "https://crash-gateway-grm-cr.100hp.app/state";
+        const headers = {
+            'customer-id': '077dee8d-c923-4c02-9bee-757573662e69',
+            'session-id': '0f4fc4fa-49aa-408d-9813-adee691e7172',
+            'accept': 'application/json'
+        };
+
+        try {
+            const response = await fetch(apiURL, { headers });
+            if (!response.ok) throw new Error("Erreur API");
+
+            const data = await response.json();
+            return data.stopCoefficients?.[0] ?? null;
+        } catch (error) {
+            console.error("Erreur :", error);
+            return null;
+        }
+    }
+
+    // Fonction pour démarrer la récupération automatique
+    function startAutoFetch() {
+        if (autoFetchInterval) return;
+        
+        isAutoFetchActive = true;
+        const statusElement = document.getElementById('autoFetchStatus');
+        statusElement.innerHTML = `
+            <span class="bg-green-500 rounded-full w-3 h-3 inline-block mr-2"></span>
+            <span>Récupération en cours...</span>
+            <span class="fetching-spinner ml-2 w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full inline-block animate-spin"></span>
+        `;
+        
+        // Démarrer immédiatement une première récupération
+        fetchLatestCoefficient();
+        
+        // Puis configurer l'intervalle
+        autoFetchInterval = setInterval(fetchLatestCoefficient, 5000);
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Récupération démarrée',
+            text: 'Les coefficients seront récupérés automatiquement toutes les 5 secondes',
+            timer: 2000
+        });
+    }
+    
+    // Fonction pour arrêter la récupération automatique
+    function stopAutoFetch() {
+        if (autoFetchInterval) {
+            clearInterval(autoFetchInterval);
+            autoFetchInterval = null;
+            isAutoFetchActive = false;
+            
+            // Réinitialiser les variables de contrôle des doublons
+            lastCoefficient = null;
+            lastFetchTime = null;
+            
+            const statusElement = document.getElementById('autoFetchStatus');
+            statusElement.innerHTML = `
+                <span class="bg-red-500 rounded-full w-3 h-3 inline-block mr-2"></span>
+                <span>Inactif</span>
+            `;
+            
+            Swal.fire({
+                icon: 'info',
+                title: 'Récupération arrêtée',
+                timer: 1500
+            });
+        }
+    }
+    
+    // Fonction pour récupérer le dernier coefficient avec contrôle des doublons
+    async function fetchLatestCoefficient() {
+        const coefficient = await fetchStopCoefficient();
+        if (coefficient === null) return;
+        
+        const now = Date.now();
+        const adjustedCoefficient = coefficient === 1.00 ? 1.01 : coefficient;
+        const roundedCoefficient = parseFloat(adjustedCoefficient.toFixed(2));
+        
+        // Vérifier si le coefficient est identique au précédent et dans un intervalle < 3s
+        if (lastCoefficient === roundedCoefficient && lastFetchTime && (now - lastFetchTime) < 7000) {
+            showDuplicateWarning();
+            return;
+        }
+        
+        // Mettre à jour les variables de contrôle
+        lastCoefficient = roundedCoefficient;
+        lastFetchTime = now;
+        
+        autoCoefficients.push(roundedCoefficient);
+        updateCoefficientsDisplay();
+        document.getElementById('oddsInput').value = autoCoefficients.join(', ');
+        
+        // Ajouter à l'analyse de tendance
+        trendAnalysis.push(roundedCoefficient);
+        if (trendAnalysis.length > 10) trendAnalysis.shift();
+        
+        // Vérification des prédictions en attente
+        verifyPendingPredictions(roundedCoefficient);
+        
+        // Si 5 coefficients, déclencher la prédiction
+        if (autoCoefficients.length >= 5) {
+            predictOdds(true);
+            
+            setTimeout(() => {
+                autoCoefficients = [];
+                updateCoefficientsDisplay();
+                document.getElementById('oddsInput').value = '';
+            }, 1000);
+        }
+    }
+    
+    function showDuplicateWarning() {
+        const displayElement = document.getElementById('coefficientsDisplay');
+        if (!displayElement.querySelector('.duplicate-warning')) {
+            const warningElement = document.createElement('div');
+            warningElement.className = 'duplicate-warning';
+            warningElement.innerHTML = `
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Coefficient identique détecté dans un intervalle trop court (ignoré)
+            `;
+            displayElement.appendChild(warningElement);
+            
+            // Supprimer l'avertissement après 3 secondes
+            setTimeout(() => {
+                if (warningElement.parentNode) {
+                    warningElement.parentNode.removeChild(warningElement);
+                }
+            }, 3000);
+        }
+    }
+    
+    // Vérification des prédictions en attente
+    function verifyPendingPredictions(newCoefficient) {
+        const updatedPending = [];
+        
+        for (const pending of pendingVerification) {
+            // Vérifier si le nouveau coefficient valide la prédiction
+            if (newCoefficient >= pending.predictedOdds) {
+                // Succès - mettre à jour la prédiction
+                const predictionIndex = predictionHistory.findIndex(p => p.id === pending.id);
+                if (predictionIndex !== -1) {
+                    predictionHistory[predictionIndex].verificationStatus = 'success';
+                    predictionHistory[predictionIndex].verifiedRound = pending.currentRound;
+                    predictionHistory[predictionIndex].status = 'success';
+                    predictionHistory[predictionIndex].round = pending.currentRound;
+                    localStorage.setItem('predictionHistory', JSON.stringify(predictionHistory));
+                    updatePredictionHistory();
+                    updateStatistics();
+                    
+                    // Afficher notification
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Prédiction validée!',
+                        html: `La prédiction ${pending.predictedOdds} a été validée au Round ${pending.currentRound}`,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                }
+            } else {
+                // Incrémenter le round
+                pending.currentRound++;
+                
+                // Vérifier si on a dépassé le nombre de rounds à vérifier
+                if (pending.currentRound <= 5) {
+                    updatedPending.push(pending);
+                    
+                    // Mettre à jour l'historique
+                    updatePredictionHistory();
+                } else {
+                    // Échec après 5 rounds
+                    const predictionIndex = predictionHistory.findIndex(p => p.id === pending.id);
+                    if (predictionIndex !== -1) {
+                        predictionHistory[predictionIndex].verificationStatus = 'failed';
+                        predictionHistory[predictionIndex].status = 'failed';
+                        
+                        localStorage.setItem('predictionHistory', JSON.stringify(predictionHistory));
+                        updatePredictionHistory();
+                        updateStatistics();
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Prédiction échouée',
+                            html: `La prédiction ${pending.predictedOdds} n'a pas été validée dans les 5 rounds`,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    }
+                }
+            }
+        }
+        
+        pendingVerification = updatedPending;
+    }
+    
+    // Fonction pour mettre à jour l'affichage des coefficients
+    function updateCoefficientsDisplay() {
+        const displayElement = document.getElementById('coefficientsDisplay');
+        
+        if (autoCoefficients.length === 0) {
+            displayElement.innerHTML = '<p class="text-center text-gray-500">Les coefficients apparaîtront ici</p>';
+            return;
+        }
+        
+        displayElement.innerHTML = `
+            <div class="flex flex-wrap justify-center">
+                ${autoCoefficients.map(coef => `
+                    <div class="coefficient-badge">${coef}</div>
+                `).join('')}
+            </div>
+            <div class="text-center mt-3 text-sm text-gray-600">
+                ${5 - autoCoefficients.length} coefficient(s) restant(s) avant prédiction
+            </div>
+        `;
+    }
+
+    // Fonction de prédiction améliorée
+    function predictOdds(autoTriggered = false) {
+        const settings = JSON.parse(localStorage.getItem('predictionSettings')) || {
+            analysisMode: 'pro',
+            excludeExtremes: true,
+            trendAnalysis: true,
+            volatilityThreshold: 0.15
+        };
+
+        const oddsInput = document.getElementById('oddsInput').value;
+        const betAmount = parseFloat(document.getElementById('betAmount').value) || 0;
+        
+        let oddsArray = oddsInput.split(',')
+            .map(odd => parseFloat(odd.trim()))
+            .filter(odd => !isNaN(odd) && odd > 1);
+
+        if (oddsArray.length < 3) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Données Insuffisantes',
+                text: 'Veuillez entrer au moins 3 côtes valides',
+                confirmButtonColor: '#3B82F6'
+            });
+            return;
+        }
+
+        if (settings.excludeExtremes) {
+            oddsArray.sort((a, b) => a - b);
+            // Exclure seulement le plus bas et le plus haut
+            oddsArray = oddsArray.slice(1, -1);
+        }
+
+        // Calculer la moyenne mobile exponentielle (EMA)
+        const calculateEMA = (data, smoothing = 0.2) => {
+            let ema = [data[0]];
+            for (let i = 1; i < data.length; i++) {
+                ema.push(data[i] * smoothing + ema[i-1] * (1 - smoothing));
+            }
+            return ema;
+        };
+
+        // Calculer la volatilité
+        const calculateVolatility = (data) => {
+            const mean = data.reduce((a, b) => a + b, 0) / data.length;
+            const deviations = data.map(val => Math.pow(val - mean, 2));
+            const variance = deviations.reduce((a, b) => a + b, 0) / data.length;
+            return Math.sqrt(variance);
+        };
+
+        // Calculer la tendance
+        const calculateTrend = (data) => {
+            if (data.length < 2) return 'stable';
+            const last = data[data.length - 1];
+            const prev = data[data.length - 2];
+            return last > prev ? 'up' : last < prev ? 'down' : 'stable';
+        };
+
+        // Détecter les motifs dans les données
+        const detectPattern = (data) => {
+            if (data.length < 3) return 'neutral';
+            
+            const lastThree = data.slice(-3);
+            // Détecter un motif ascendant
+            if (lastThree[0] < lastThree[1] && lastThree[1] < lastThree[2]) {
+                return 'bullish';
+            }
+            // Détecter un motif descendant
+            if (lastThree[0] > lastThree[1] && lastThree[1] > lastThree[2]) {
+                return 'bearish';
+            }
+            return 'neutral';
+        };
+
+        // Calculs statistiques avancés
+        const mean = oddsArray.reduce((a, b) => a + b, 0) / oddsArray.length;
+        const volatility = calculateVolatility(oddsArray);
+        const ema = calculateEMA(oddsArray);
+        const emaValue = ema[ema.length - 1];
+        const trend = calculateTrend(oddsArray);
+        const pattern = detectPattern(oddsArray);
+
+        // Facteur de confiance basé sur la volatilité
+        const confidenceFactor = Math.max(0.1, 1 - (volatility * 2));
+        const confidencePercentage = Math.round(confidenceFactor * 100);
+
+        // Calcul de la prédiction finale avec pondération
+        let prediction;
+        switch(settings.analysisMode) {
+            case 'advanced':
+                const weights = oddsArray.map((_, i) => 1 + (i * 0.1));
+                const weightedSum = oddsArray.reduce((acc, curr, i) => acc + (curr * weights[i]), 0);
+                const weightSum = weights.reduce((acc, curr) => acc + curr, 0);
+                prediction = weightedSum / weightSum;
+                break;
+            case 'pro':
+                // Pondération: 60% EMA, 30% moyenne, 10% dernier coefficient
+                prediction = (emaValue * 0.6) + (mean * 0.3) + (oddsArray[oddsArray.length - 1] * 0.1);
+                // Ajustement basé sur la tendance
+                if (trend === 'up') prediction *= 1.05;
+                if (trend === 'down') prediction *= 0.97;
+                break;
+            default:
+                prediction = mean;
+        }
+
+        // Ajustement final basé sur la confiance
+        prediction = prediction * (1 + (confidenceFactor * 0.1));
+
+        const probabilities = oddsArray.map(odd => (1 / odd * 100).toFixed(2));
+        const potentialWin = betAmount ? (betAmount * prediction).toFixed(2) : 'N/A';
+
+        const predictionResult = {
+            id: Date.now(),
+            date: new Date().toLocaleString(),
+            averageOdds: prediction.toFixed(2),
+            probabilities: probabilities,
+            potentialWin: potentialWin,
+            status: 'pending',
+            originalOdds: oddsArray.join(', '),
+            round: null,
+            analysisMode: settings.analysisMode,
+            verificationStatus: 'pending',
+            verifiedRound: null,
+            confidence: confidencePercentage,
+            trend: trend,
+            pattern: pattern,
+            volatility: volatility.toFixed(3)
+        };
+
+        // Déterminer les rounds d'apparition et le message associé
+        const proba = parseFloat(predictionResult.probabilities[0]);
+        let predictedRounds = [];
+        let roundMessage = "";
+        let accuracyClass = "";
+        let confidenceLevel = "";
+
+        // Détermination basée sur la confiance et la probabilité
+        if (confidencePercentage >= 80 && proba >= 75) {
+            predictedRounds = [1, 2];
+            roundMessage = "Très haute confiance - Cette prédiction a une très forte probabilité d'apparaître rapidement.";
+            accuracyClass = "high-accuracy";
+            confidenceLevel = "Très élevée";
+        } else if (confidencePercentage >= 60 && proba >= 60) {
+            predictedRounds = [1, 2, 3];
+            roundMessage = "Haute confiance - Cette prédiction est très probable dans les rounds indiqués.";
+            accuracyClass = "high-accuracy";
+            confidenceLevel = "Élevée";
+        } else if (confidencePercentage >= 40 && proba >= 50) {
+            predictedRounds = [2, 3, 4];
+            roundMessage = "Confiance moyenne - Cette prédiction devrait apparaître dans les rounds indiqués.";
+            accuracyClass = "medium-accuracy";
+            confidenceLevel = "Moyenne";
+        } else if (proba < 50) {
+            predictedRounds = [3, 4, 5];
+            roundMessage = "⚠️ Faible confiance - Ce type de pari présente un risque plus élevé. Considérez un montant de mise réduit.";
+            accuracyClass = "low-accuracy";
+            confidenceLevel = "Faible";
+        } else {
+            predictedRounds = [2, 3, 4, 5];
+            roundMessage = "Confiance modérée - Surveillez attentivement les rounds indiqués.";
+            accuracyClass = "medium-accuracy";
+            confidenceLevel = "Modérée";
+        }
+
+        // Ajouter les nouvelles propriétés au résultat
+        predictionResult.predictedRounds = predictedRounds;
+        predictionResult.roundMessage = roundMessage;
+        predictionResult.accuracyClass = accuracyClass;
+        predictionResult.confidenceLevel = confidenceLevel;
+
+        predictionHistory.unshift(predictionResult);
+        localStorage.setItem('predictionHistory', JSON.stringify(predictionHistory));
+        
+        // Ajouter à la vérification automatique si déclenché automatiquement
+        if (autoTriggered && isAutoFetchActive) {
+            pendingVerification.push({
+                id: predictionResult.id,
+                predictedOdds: parseFloat(predictionResult.averageOdds),
+                currentRound: 1
+            });
+        }
+
+        updatePredictionDisplay(predictionResult);
+        updatePredictionHistory();
+        updateStatistics();
+        updateStatsChart();
+        analyzeHistoricalData();
+
+        document.getElementById('oddsInput').value = '';
+        document.getElementById('betAmount').value = '';
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Prédiction Générée!',
+            html: `
+                <div class="text-left">
+                    <p>Côte prédite: <strong>${predictionResult.averageOdds}</strong></p>
+                    <p>Confiance: <strong>${predictionResult.confidenceLevel}</strong></p>
+                    <p class="text-sm text-gray-600">Mode: ${settings.analysisMode}</p>
+                </div>
+            `,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }
+    
+    function updatePredictionDisplay(prediction) {
+        let roundHTML = '';
+        let adviceClass = '';
+        
+        // Déterminer l'indicateur de tendance
+        let trendIndicator = '';
+        if (prediction.trend === 'up') {
+            trendIndicator = '<span class="trend-indicator trend-up"><i class="fas fa-arrow-up mr-1"></i> Hausse</span>';
+        } else if (prediction.trend === 'down') {
+            trendIndicator = '<span class="trend-indicator trend-down"><i class="fas fa-arrow-down mr-1"></i> Baisse</span>';
+        } else {
+            trendIndicator = '<span class="trend-indicator trend-stable"><i class="fas fa-arrows-alt-h mr-1"></i> Stable</span>';
+        }
+        
+        // Déterminer le motif détecté
+        let patternIndicator = '';
+        if (prediction.pattern === 'bullish') {
+            patternIndicator = '<span class="pattern-indicator pattern-bullish">Tendance haussière</span>';
+        } else if (prediction.pattern === 'bearish') {
+            patternIndicator = '<span class="pattern-indicator pattern-bearish">Tendance baissière</span>';
+        } else {
+            patternIndicator = '<span class="pattern-indicator pattern-neutral">Pas de tendance claire</span>';
+        }
+        
+        if (prediction.predictedRounds && prediction.predictedRounds.length > 0) {
+            if (prediction.accuracyClass === "high-accuracy") {
+                adviceClass = "bg-green-100 text-green-800";
+            } else if (prediction.accuracyClass === "medium-accuracy") {
+                adviceClass = "bg-yellow-100 text-yellow-800";
+            } else {
+                adviceClass = "bg-red-100 text-red-800";
+            }
+            
+            roundHTML = `
+                <div class="predicted-rounds-container">
+                    <div class="text-center font-bold text-lg text-blue-700 mb-3">Rounds Prédits d'Apparition</div>
+                    <div class="text-center">
+                        ${prediction.predictedRounds.map(round => `
+                            <span class="round-badge">${round}</span>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="mt-4 p-3 rounded-lg ${adviceClass}">
+                        ${prediction.roundMessage}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">Niveau de confiance</span>
+                            <span class="text-sm font-medium text-gray-700">${prediction.confidence}%</span>
+                        </div>
+                        <div class="confidence-level w-full rounded-full h-2.5 bg-gray-200">
+                            <div class="confidence-fill h-2.5 rounded-full" style="width: ${prediction.confidence}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex justify-between items-center">
+                        <div>
+                            <span class="text-sm text-gray-700">Tendance: </span>
+                            ${trendIndicator}
+                        </div>
+                        <div>
+                            ${patternIndicator}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2 text-xs text-gray-600">
+                        Volatilité: ${prediction.volatility}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Statut de vérification
+        let verificationStatus = '';
+        if (prediction.verificationStatus === 'pending') {
+            const pendingInfo = pendingVerification.find(p => p.id === prediction.id);
+            const currentRound = pendingInfo ? pendingInfo.currentRound : 1;
+            
+            verificationStatus = `
+                <div class="verification-status verification-in-progress mt-4">
+                    <i class="fas fa-sync-alt fa-spin mr-2"></i>
+                    Vérification en cours... 
+                    <span class="font-bold">Round ${currentRound}/5</span>
+                </div>
+            `;
+        } else if (prediction.verificationStatus === 'success') {
+            verificationStatus = `
+                <div class="verification-status verification-success mt-4">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    ✅ Validé au Round ${prediction.verifiedRound}
+                </div>
+            `;
+        } else if (prediction.verificationStatus === 'failed') {
+            verificationStatus = `
+                <div class="verification-status verification-failed mt-4">
+                    <i class="fas fa-times-circle mr-2"></i>
+                    ❌ Échoué après 5 rounds
+                </div>
+            `;
+        }
+        
+        document.getElementById('result').innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <span class="text-sm text-gray-600 block mb-1">Côte Probable</span>
+                    <p class="text-3xl font-bold text-blue-600">${prediction.averageOdds}</p>
+                </div>
+                
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <span class="text-sm text-gray-600 block mb-1">Probabilité de Réussite</span>
+                    <p class="text-3xl font-bold text-green-600">${prediction.probabilities[0]}%</p>
+                </div>
+                
+                ${prediction.potentialWin !== 'N/A' ? `
+                <div class="col-span-full text-center p-4 bg-purple-50 rounded-lg mt-2">
+                    <span class="text-sm text-gray-600 block mb-1">Gain Potentiel</span>
+                    <p class="text-2xl font-bold text-purple-600">${prediction.potentialWin} €</p>
+                </div>` : ''}
+            </div>
+            ${roundHTML}
+            ${verificationStatus}
+        `;
+    }
+    
+    function updatePredictionHistory() {
+        const historyContainer = document.getElementById('predictionHistory');
+        historyContainer.innerHTML = predictionHistory.map((prediction) => {
+            // Vérifier si cette prédiction est en cours de vérification
+            const isPendingVerification = pendingVerification.some(p => p.id === prediction.id);
+            const pendingInfo = pendingVerification.find(p => p.id === prediction.id);
+            
+            return `
+            <div class="history-item bg-white border border-gray-200 p-4 rounded-xl">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-gray-800">${prediction.date}</p>
+                                <p class="text-sm text-gray-600">
+                                    Prédiction: <span class="font-bold text-blue-600">${prediction.averageOdds}</span> 
+                                    <span class="ml-2">(${prediction.probabilities[0]}%)</span>
+                                </p>
+                            </div>
+                            <div>
+                                ${prediction.status === 'pending' ? `
+                                    <span class="status-badge status-pending">En attente</span>
+                                ` : prediction.status === 'success' ? `
+                                    <span class="status-badge status-success">Validée</span>
+                                ` : `
+                                    <span class="status-badge status-failed">Échouée</span>
+                                `}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2 text-xs">
+                            <span class="text-gray-600">Confiance: </span>
+                            <span class="font-semibold">${prediction.confidenceLevel}</span>
+                        </div>
+                        
+                        ${prediction.predictedRounds ? `
+                            <div class="mt-3">
+                                <p class="text-xs text-gray-500 mb-1">Rounds prédits:</p>
+                                <div class="flex flex-wrap gap-1">
+                                    ${prediction.predictedRounds.map(r => `
+                                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                            ${r}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <!-- Statut de vérification -->
+                        ${isPendingVerification ? `
+                            <div class="mt-3 text-xs bg-orange-50 text-orange-800 p-2 rounded-lg">
+                                <i class="fas fa-sync-alt fa-spin mr-1"></i>
+                                Vérification en cours: 
+                                <span class="font-bold">Round ${pendingInfo.currentRound}/5</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${prediction.verificationStatus === 'success' ? `
+                            <div class="mt-3 text-xs bg-green-50 text-green-800 p-2 rounded-lg">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Validé au Round ${prediction.verifiedRound}
+                            </div>
+                        ` : ''}
+                        
+                        ${prediction.verificationStatus === 'failed' ? `
+                            <div class="mt-3 text-xs bg-red-50 text-red-800 p-2 rounded-lg">
+                                <i class="fas fa-times-circle mr-1"></i>
+                                Échoué après 5 rounds
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+    
+    function updateStatistics() {
+        const total = predictionHistory.length;
+        const success = predictionHistory.filter(p => p.status === 'success').length;
+        const failed = predictionHistory.filter(p => p.status === 'failed').length;
+        const pending = predictionHistory.filter(p => p.status === 'pending').length;
+        
+        const accuracy = total > 0 
+            ? ((success / total) * 100).toFixed(1)
+            : '0';
+
+        document.getElementById('totalPredictions').textContent = total;
+        document.getElementById('predictionAccuracy').textContent = accuracy + '%';
+        document.getElementById('successCount').textContent = success;
+        document.getElementById('failedCount').textContent = failed;
+        document.getElementById('pendingCount').textContent = pending;
+    }
+
+    function updateStatsChart() {
+        const ctx = document.getElementById('statsChart').getContext('2d');
+        
+        if (statsChart) statsChart.destroy();
+
+        const completedPredictions = predictionHistory.filter(p => p.status !== 'pending').reverse();
+        
+        statsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: completedPredictions.map((_, index) => `Prédiction #${index + 1}`),
+                datasets: [{
+                    label: 'Côtes Moyennes',
+                    data: completedPredictions.map(p => parseFloat(p.averageOdds)),
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Évolution des Prédictions'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    }
+    
+    function openAdvancedSettings() {
+        const currentSettings = JSON.parse(localStorage.getItem('predictionSettings')) || {
+            analysisMode: 'pro',
+            excludeExtremes: true,
+            trendAnalysis: true,
+            volatilityThreshold: 0.15
+        };
+
+        Swal.fire({
+            title: 'Paramètres Avancés',
+            html: `
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="text-left">
+                        <label class="block text-gray-700 mb-2">Mode d'Analyse</label>
+                        <select id="analysisMode" class="w-full p-3 border border-gray-300 rounded-lg">
+                            <option value="standard" ${currentSettings.analysisMode === 'standard' ? 'selected' : ''}>
+                                Standard (Moyenne simple)
+                            </option>
+                            <option value="advanced" ${currentSettings.analysisMode === 'advanced' ? 'selected' : ''}>
+                                Avancé (Pondération adaptative)
+                            </option>
+                            <option value="pro" ${currentSettings.analysisMode === 'pro' ? 'selected' : ''}>
+                                Professionnel (Analyse complète)
+                            </option>
+                        </select>
+                    </div>
+                    <div class="text-left">
+                        <label class="block text-gray-700 mb-2">Options d'Analyse</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center p-2 bg-gray-50 rounded-lg">
+                                <input type="checkbox" id="excludeExtremes" class="mr-2 h-5 w-5" 
+                                    ${currentSettings.excludeExtremes ? 'checked' : ''}>
+                                Exclure les valeurs extrêmes
+                            </label>
+                            <label class="flex items-center p-2 bg-gray-50 rounded-lg">
+                                <input type="checkbox" id="trendAnalysis" class="mr-2 h-5 w-5"
+                                    ${currentSettings.trendAnalysis ? 'checked' : ''}>
+                                Analyse tendancielle
+                            </label>
+                        </div>
+                    </div>
+                    <div class="text-left">
+                        <label class="block text-gray-700 mb-2">Seuil de volatilité</label>
+                        <input type="range" id="volatilityThreshold" min="0.05" max="0.5" step="0.01" 
+                            value="${currentSettings.volatilityThreshold}" class="w-full">
+                        <div class="text-center text-sm text-gray-600 mt-1" id="volatilityValue">
+                            ${currentSettings.volatilityThreshold}
+                        </div>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Sauvegarder',
+            cancelButtonText: 'Annuler',
+            confirmButtonColor: '#3B82F6',
+            cancelButtonColor: '#EF4444',
+            didOpen: () => {
+                const slider = document.getElementById('volatilityThreshold');
+                const valueDisplay = document.getElementById('volatilityValue');
+                slider.addEventListener('input', () => {
+                    valueDisplay.textContent = slider.value;
+                });
+            },
+            preConfirm: () => {
+                const settings = {
+                    analysisMode: document.getElementById('analysisMode').value,
+                    excludeExtremes: document.getElementById('excludeExtremes').checked,
+                    trendAnalysis: document.getElementById('trendAnalysis').checked,
+                    volatilityThreshold: parseFloat(document.getElementById('volatilityThreshold').value)
+                };
+                localStorage.setItem('predictionSettings', JSON.stringify(settings));
+                return settings;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Paramètres sauvegardés',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
+        });
+    }
+    
+    function analyzeHistoricalData() {
+        const successfulPredictions = predictionHistory.filter(p => p.status === 'success');
+        if (successfulPredictions.length === 0) {
+            document.getElementById('intelligentAnalysis').innerHTML = `
+                <div class="text-center text-gray-500 p-4">
+                    <i class="fas fa-database text-3xl text-gray-400 mb-3"></i>
+                    <p>Pas encore assez de données pour l'analyse</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculer la moyenne des confiances des prédictions réussies
+        const avgConfidence = successfulPredictions.reduce((sum, p) => sum + p.confidence, 0) / successfulPredictions.length;
+        
+        // Trouver la plage de côtes la plus réussie
+        const oddsRanges = {
+            '1.0-1.5': 0,
+            '1.5-2.0': 0,
+            '2.0-2.5': 0,
+            '2.5+': 0
+        };
+        
+        successfulPredictions.forEach(p => {
+            const odds = parseFloat(p.averageOdds);
+            if (odds <= 1.5) oddsRanges['1.0-1.5']++;
+            else if (odds <= 2.0) oddsRanges['1.5-2.0']++;
+            else if (odds <= 2.5) oddsRanges['2.0-2.5']++;
+            else oddsRanges['2.5+']++;
+        });
+        
+        // Trouver la plage la plus performante
+        let bestRange = '';
+        let maxCount = 0;
+        for (const [range, count] of Object.entries(oddsRanges)) {
+            if (count > maxCount) {
+                maxCount = count;
+                bestRange = range;
+            }
+        }
+        
+        // Trouver la confiance moyenne des prédictions réussies
+        const avgSuccessConfidence = Math.round(avgConfidence);
+        
+        document.getElementById('intelligentAnalysis').innerHTML = `
+            <div class="space-y-4">
+                <div class="p-3 bg-blue-50 rounded-lg">
+                    <div class="font-bold text-blue-800 mb-2">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Performance Moyenne
+                    </div>
+                    <p class="text-blue-600">
+                        Taux de réussite: <span class="font-bold">${((successfulPredictions.length / predictionHistory.length) * 100).toFixed(1)}%</span>
+                    </p>
+                    <p class="text-blue-600 text-sm mt-1">
+                        Confiance moyenne des succès: <span class="font-bold">${avgSuccessConfidence}%</span>
+                    </p>
+                </div>
+                
+                <div class="p-3 bg-green-50 rounded-lg">
+                    <div class="font-bold text-green-800 mb-2">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Meilleures Côtes
+                    </div>
+                    <p class="text-green-600">
+                        Plage optimale: <span class="font-bold">${bestRange}</span>
+                    </p>
+                    <div class="mt-2">
+                        <p class="text-xs text-gray-600 mb-1">Répartition des succès:</p>
+                        <div class="space-y-1">
+                            <div class="flex items-center">
+                                <span class="text-xs w-16">1.0-1.5:</span>
+                                <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: ${(oddsRanges['1.0-1.5'] / successfulPredictions.length) * 100}%"></div>
+                                </div>
+                                <span class="text-xs w-8 text-right">${oddsRanges['1.0-1.5']}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-xs w-16">1.5-2.0:</span>
+                                <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: ${(oddsRanges['1.5-2.0'] / successfulPredictions.length) * 100}%"></div>
+                                </div>
+                                <span class="text-xs w-8 text-right">${oddsRanges['1.5-2.0']}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-xs w-16">2.0-2.5:</span>
+                                <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: ${(oddsRanges['2.0-2.5'] / successfulPredictions.length) * 100}%"></div>
+                                </div>
+                                <span class="text-xs w-8 text-right">${oddsRanges['2.0-2.5']}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-xs w-16">2.5+:</span>
+                                <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: ${(oddsRanges['2.5+'] / successfulPredictions.length) * 100}%"></div>
+                                </div>
+                                <span class="text-xs w-8 text-right">${oddsRanges['2.5+']}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-3 bg-purple-50 rounded-lg">
+                    <div class="font-bold text-purple-800 mb-2">
+                        <i class="fas fa-history mr-2"></i>
+                        Analyse Historique
+                    </div>
+                    <p class="text-purple-600">
+                        <span class="font-bold">${successfulPredictions.length}</span> prédictions réussies sur 
+                        <span class="font-bold">${predictionHistory.length}</span> au total
+                    </p>
+                </div>
+            </div>
+        `;
+    }
+
+    function toggleHistoryVisibility() {
+        const historyContainer = document.getElementById('predictionHistory');
+        const toggleButton = document.getElementById('toggleHistory');
+        isHistoryVisible = !isHistoryVisible;
+        
+        if (isHistoryVisible) {
+            historyContainer.style.display = 'block';
+            toggleButton.textContent = 'Masquer';
+            toggleButton.classList.remove('bg-green-500');
+            toggleButton.classList.add('bg-blue-500');
+        } else {
+            historyContainer.style.display = 'none';
+            toggleButton.textContent = 'Afficher';
+            toggleButton.classList.remove('bg-blue-500');
+            toggleButton.classList.add('bg-green-500');
+        }
+    }
+    
+    // Vérification du code d'accès
+    async function verifyAccess() {
+        const accessCode = document.getElementById('accessCode').value.trim().toUpperCase();
+        
+        if (!accessCode) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: 'Veuillez entrer un code d\'accès'
+            });
+            return;
+        }
+
+        try {
+            const codesRef = db.collection('codes');
+            const query = await codesRef
+                .where('code', '==', accessCode)
+                .get();
+
+            if (query.empty) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Code invalide',
+                    text: 'Le code entré n\'existe pas ou a expiré'
+                });
+                return;
+            }
+
+            const codeDoc = query.docs[0];
+            const codeData = codeDoc.data();
+            const now = new Date();
+            const expiration = codeData.dateExpiration.toDate();
+            const duration = codeData.duration;
+
+            if (now > expiration) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Code expiré',
+                    text: 'Ce code d\'accès a expiré'
+                });
+                return;
+            }
+
+            if (codeData.utilise) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Code déjà utilisé',
+                    text: 'Ce code a déjà été utilisé'
+                });
+                return;
+            }
+
+            // Marquer le code comme utilisé
+            await codeDoc.ref.update({
+                utilise: true,
+                dateUtilisation: now
+            });
+
+            // Sauvegarder dans localStorage
+            localStorage.setItem('codeAccess', accessCode);
+            localStorage.setItem('accessExpiration', expiration.getTime().toString());
+            localStorage.setItem('accessDuration', duration);
+
+            // Démarrer le compte à rebours
+            startExpirationTimer(expiration);
+
+            document.getElementById('loginModal').style.display = 'none';
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Accès accordé',
+                html: `
+                    <p>Bienvenue dans PredictionBot!</p>
+                    <p class="text-sm text-gray-600">Durée d'accès : ${duration}</p>
+                `,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+        } catch (error) {
+            console.error('Erreur de vérification:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur technique',
+                text: 'Une erreur est survenue lors de la vérification du code'
+            });
+        }
+    }
+
+    function startExpirationTimer(expirationDate) {
+        const daysElement = document.getElementById('days');
+        const hoursElement = document.getElementById('hours');
+        const minutesElement = document.getElementById('minutes');
+        const secondsElement = document.getElementById('seconds');
+        const duration = localStorage.getItem('accessDuration');
+
+        document.getElementById('countdownContainer').style.display = 'block';
+        
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = expirationDate - now;
+
+            if (distance < 0) {
+                localStorage.removeItem('codeAccess');
+                localStorage.removeItem('accessExpiration');
+                localStorage.removeItem('accessDuration');
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Session expirée',
+                    text: 'Votre temps d\'accès est écoulé. Vous allez être redirigé.',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    timer: 3000
+                }).then(() => {
+                    document.getElementById('loginModal').style.display = 'flex';
+                    document.getElementById('countdownContainer').style.display = 'none';
+                    clearInterval(window.countdownInterval);
+                    document.getElementById('accessCode').value = '';
+                });
+                return;
+            }
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            daysElement.textContent = days.toString().padStart(2, '0');
+            hoursElement.textContent = hours.toString().padStart(2, '0');
+            minutesElement.textContent = minutes.toString().padStart(2, '0');
+            secondsElement.textContent = seconds.toString().padStart(2, '0');
+        }
+
+        updateCountdown();
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        window.countdownInterval = countdownInterval;
+    }
+</script>
+</body>
+</html>
